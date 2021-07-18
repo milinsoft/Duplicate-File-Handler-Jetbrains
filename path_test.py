@@ -1,7 +1,6 @@
 import os
 import os.path
 
-test_list = []
 test_pathes = ['./module/root_folder/phones.csv',
                 './module/root_folder/info.txt',
                 './module/root_folder/python.txt',
@@ -21,7 +20,7 @@ test_pathes = ['./module/root_folder/phones.csv',
 #print(test_pathes)
 
 #format = "txt"
-format = input("enter format like php, csv, html, csv, txt, js, json\n")
+
 #for x in test_pathes:
 #    extension = os.path.splitext(x)[1][1:]
 #    print(extension)
@@ -29,12 +28,60 @@ format = input("enter format like php, csv, html, csv, txt, js, json\n")
 #    test_list.append(list(filter(format_filter, extension)))
 #print(test_list)
 
-new_list = []
-for x in test_pathes:
-    extension = os.path.splitext(x)[1][1:]
-    if extension == format:
-        new_list.append(x)
-print()
-#print(new_list)
-for x in new_list:
-    print(x)
+def first_method():
+    format = input("enter format like php, csv, html, csv, txt, js, json\n")
+    new_list = []
+    for x in test_pathes:
+        extension = os.path.splitext(x)[1][1:]
+        if extension == format:
+            new_list.append(x)
+    print()
+    #print(new_list)
+    for x in new_list:
+        print(x)
+
+# filtering method
+def second_method():
+    format = input("enter format like php, csv, html, csv, txt, js, json\n")
+    #format = "js"
+    new_list = test_pathes
+    new_list = list(filter(lambda x: os.path.splitext(x)[1][1:] == format, new_list))
+    #print(os.path.splitext(new_list)[1][1:])
+    #print(test_pathes)
+    #os.path.splitext(x)[1][1:]
+    print("")
+    #print(new_list)
+    for x in new_list:
+        print(x)
+
+
+def third_method():
+    format = input("enter format like php, csv, html, csv, txt, js, json\n")
+    new_list = test_pathes
+    new_list = [x for x in new_list if os.path.splitext(x)[1][1:] == format]
+    print("")
+    #print(new_list)
+    for x in new_list:
+        print(x)
+
+
+# work with dict
+
+
+def fourth_method():
+    format = input("enter format like php, csv, html, csv, txt, js, json\n")
+    new_list = test_pathes
+    new_list = [x for x in new_list if os.path.splitext(x)[1][1:] == format]
+    sizes = [os.path.getsize(x) for x in new_list]
+    print("sizes:\n", sizes)
+
+    print("")
+    #print(new_list)
+    for x in new_list:
+        print(x)
+
+
+#first_method()  # working
+#second_method()  # working
+#third_method()  # working
+fourth_method()
