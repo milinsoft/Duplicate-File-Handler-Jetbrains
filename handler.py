@@ -4,7 +4,6 @@ import sys
 
 
 def sort_list(sizes):
-    #global sizes
     sort_by = int(input("""Size sorting options:
 1. Descending
 2. Ascending\n"""))
@@ -17,21 +16,19 @@ def sort_list(sizes):
     else:
         print("\nWrong option")
         sort_list(sizes)
-        #sort_list()
 
 
 def print_results(test_dict):
     print()
     for x in test_dict:
         if len(test_dict[x]) > 1:
-            #print(int(x) * 1000, "bytes")
             print(int(x), "bytes")
             for y in test_dict[x]:
                 if len(y) > 1:
                     print(y)
             print()
-            # consider print of sorted tuples (from dict)
     print()
+
 
 def check_directory():
     args = sys.argv
@@ -41,9 +38,9 @@ def check_directory():
         return main()
 
 
-def full_data_filter(lst, format):  # rename variable full_data to sizes
-    if format != "":
-        new_list = [x for x in lst if format in os.path.splitext(x)[1][1:]]
+def full_data_filter(lst, file_format):
+    if file_format != "":
+        new_list = [x for x in lst if file_format in os.path.splitext(x)[1][1:]]
     else:
         new_list = [x for x in lst if os.path.splitext(x)[1][1:] != ""]
     print("")
@@ -51,18 +48,16 @@ def full_data_filter(lst, format):  # rename variable full_data to sizes
 
 
 def main():
-    format = input("Enter file format:\n")
-    sizes = []
+    file_format = input("Enter file file_format:\n")
     full_data = []
     for root, dirs, files in os.walk('.', topdown=True):
         for name in files:
             full_path = os.path.join(root, name)
             full_data.append(full_path)
 
-    new_list = full_data_filter(full_data, format)  # filtering the list + returning new list, + assigning it to variable
+    new_list = full_data_filter(full_data, file_format)  # filtering the list + returning new list, + assigning it to variable
     sizes = [os.path.getsize(x) for x in new_list]
     sizes = list(set(sizes))
-    #print(sizes)
     sizes_sorted = sort_list(sizes)  # sorting list with data.
     # creating dict using sizes list as keys
     test_dict = dict.fromkeys(sizes_sorted, [])
@@ -72,5 +67,5 @@ def main():
     print_results(test_dict)
 
 
-if __name__ == "__main__":  # running program only if it's called directly, not imported
-   check_directory()
+if __name__ == "__main__":
+    check_directory()
