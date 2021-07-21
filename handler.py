@@ -18,12 +18,12 @@ def sort_list(sizes):
         sort_list(sizes)
 
 
-def print_results(test_dict):
+def print_results(paths_dict):
     print()
-    for x in test_dict:
-        if len(test_dict[x]) > 1:
+    for x in paths_dict:
+        if len(paths_dict[x]) > 1:
             print(int(x), "bytes")
-            for y in test_dict[x]:
+            for y in paths_dict[x]:
                 if len(y) > 1:
                     print(y)
             print()
@@ -40,11 +40,11 @@ def check_directory():
 
 def full_data_filter(lst, file_format):
     if file_format != "":
-        new_list = [x for x in lst if file_format in os.path.splitext(x)[1][1:]]
+        lst = [x for x in lst if file_format in os.path.splitext(x)[1][1:]]
     else:
-        new_list = [x for x in lst if os.path.splitext(x)[1][1:] != ""]
+        lst = [x for x in lst if os.path.splitext(x)[1][1:] != ""]
     print("")
-    return new_list
+    return lst
 
 
 def main():
@@ -52,19 +52,16 @@ def main():
     full_data = []
     for root, dirs, files in os.walk('.', topdown=True):
         for name in files:
-            full_path = os.path.join(root, name)
-            full_data.append(full_path)
+            full_data.append(os.path.join(root, name))
 
-    new_list = full_data_filter(full_data, file_format)  # filtering the list + returning new list, + assigning it to variable
-    sizes = [os.path.getsize(x) for x in new_list]
-    sizes = list(set(sizes))
-    sizes_sorted = sort_list(sizes)  # sorting list with data.
+    full_data = full_data_filter(full_data, file_format)  # filtering the list + returning new list, + assigning it to variable
+    file_sizes = sort_list(list(set(os.path.getsize(x) for x in full_data)))  # sorting list with data.
     # creating dict using sizes list as keys
-    test_dict = dict.fromkeys(sizes_sorted, [])
+    paths_dict = dict.fromkeys(file_sizes, [])
 
-    for x in test_dict:
-        test_dict[x] = [y.lower() for y in new_list if str(x) == str(os.path.getsize(y))]
-    print_results(test_dict)
+    for x in paths_dict:
+        paths_dict[x] = [y for y in full_data if str(x) == str(os.path.getsize(y))]
+    print_results(paths_dict)
 
 
 if __name__ == "__main__":
