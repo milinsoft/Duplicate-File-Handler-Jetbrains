@@ -47,22 +47,29 @@ def full_data_filter(lst, file_format):
     return lst
 
 
-def main():
-    file_format = input("Enter file file_format:\n")
+def creating_dict(full_data):
+    file_sizes = sort_list(list(set(os.path.getsize(x) for x in full_data)))  # sorting list with data.
+    paths_dict = dict.fromkeys(file_sizes, [])
+    for x in paths_dict:
+        paths_dict[x] = [y for y in full_data if str(x) == str(os.path.getsize(y))]
+    return paths_dict
+
+
+def obtaining_data_list():
     full_data = []
     for root, dirs, files in os.walk('.', topdown=True):
         for name in files:
             full_data.append(os.path.join(root, name))
+    return full_data
 
+
+def main():
+    file_format = input("Enter file file_format:\n")
+    full_data = obtaining_data_list()
     full_data = full_data_filter(full_data, file_format)  # filtering the list + returning new list, + assigning it to variable
-    file_sizes = sort_list(list(set(os.path.getsize(x) for x in full_data)))  # sorting list with data.
     # creating dict using sizes list as keys
-    paths_dict = dict.fromkeys(file_sizes, [])
-
-    for x in paths_dict:
-        paths_dict[x] = [y for y in full_data if str(x) == str(os.path.getsize(y))]
+    paths_dict = creating_dict(full_data)
     print_results(paths_dict)
-
 
 if __name__ == "__main__":
     check_directory()
