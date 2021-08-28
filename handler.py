@@ -1,7 +1,9 @@
 # write your code here
+# write your code here
 import os
 import sys
-
+import hashlib
+import copy
 
 def check_directory():
     # this function checks whether the directory argument provided and
@@ -71,6 +73,52 @@ def print_results(paths_dict):
                     print(y)
             print()
     print()
+    return check_for_duplicates(paths_dict)
+
+
+def obtain_hash(file):
+    with open(file, 'rb') as file:
+        return hashlib.md5(file.read()).hexdigest()
+
+
+def print_duplicates(dict):
+    # this function prints the output(result) of the program. if a format key: \n values
+    i = 1
+    print()
+    for key in dict:
+        if len(dict[key]) >= 1:
+            print(key, "bytes")
+            for hash in dict[key]:
+                if len(dict[key][hash]) > 1:
+                    print("Hash:", hash)
+                    for path in dict[key][hash]:
+                        print(f"{i} {path}")
+                        i += 1
+
+            #len(v1) > 1:
+            #print("Hash:", k)
+            #print(f"{i}. ", *v)
+            #i += 1
+            #print()
+    print()
+
+
+def check_for_duplicates(paths_dict):
+    check = input("Check for duplicates? (yes, no)")
+    duplicates_dict = copy.copy(paths_dict)
+    if check.lower() == "yes":
+        for key, value in duplicates_dict.items():
+            duplicates_dict[key] = {obtain_hash(x): [y for y in value if obtain_hash(y) == obtain_hash(x)] for x in value}
+        print_duplicates(duplicates_dict)
+
+    else:
+        # finish the program
+        exit()
+
+
+# { str(key) : [ el1, el2, ...], {str(key): [el3, el4 ...]}
+
+#duplicates_dict = {key, dict.setdefault() for key, value in duplicates_dict.items()}
 
 
 def main():
