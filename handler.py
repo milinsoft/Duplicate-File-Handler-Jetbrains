@@ -95,6 +95,7 @@ def check_for_duplicates():
 
 def print_duplicates(size_hash_dictionary):
     # this function prints the output(result) of the program. if a format key: \n values
+    del_dict = {}
     i = 1
     print()
     for key in size_hash_dictionary:
@@ -102,35 +103,40 @@ def print_duplicates(size_hash_dictionary):
         for file_hash in size_hash_dictionary[key]:
             if len(size_hash_dictionary[key][file_hash]) > 1:
                 print("Hash:", file_hash)
-
                 for path in size_hash_dictionary[key][file_hash]:
                     print(f"{i} {path}")
+
+                    del_dict[str(i)] = path
                     i += 1
-                    
-
-
     print()
-    return delete_files(i)
+    #print(del_dict)
+    return delete_files(del_dict)
 
 
-def delete_files(i):
+def delete_files(dl_dict):
     decision = input("Delete files?")
     if decision.lower() not in {"yes", "no"}:
         print("Wrong option")
-        return delete_files(i)
+        return delete_files(dl_dict)
     else:
         while True:
-            file_numbers = input("Enter file numbers to delete:\n").split()
+            file_numbers = input("Enter file numbers to delete:\n").split(" ")
             try:
                 file_numbers = [int(number) for number in file_numbers]
                 file_numbers = sorted(file_numbers, reverse=True)
             except ValueError:
                 print("Wrong format")
             else:
-                if file_numbers[0] > i:
+                if file_numbers[0] > len(dl_dict):
                     print("Wrong format")
                 else:
-                    ...
+                    freed_stace = 0
+                    for nmbr in file_numbers:
+                        print(int(os.path.getsize(dl_dict[str(nmbr)])))
+                        freed_stace += int(os.path.getsize(dl_dict[str(nmbr)]))
+                        os.remove(dl_dict[str(nmbr)])
+                    print(f"Total freed up space: {freed_stace} bytes")
+                    break
 
 
 if __name__ == "__main__":
@@ -142,3 +148,6 @@ if __name__ == "__main__":
     print_results()
     check_for_duplicates()
     # delete_files(i)
+
+
+#  os.remove(path)
