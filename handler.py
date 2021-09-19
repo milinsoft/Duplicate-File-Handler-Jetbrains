@@ -77,21 +77,6 @@ def obtain_hash(file):
         return hashlib.md5(file.read()).hexdigest()
 
 
-def print_duplicates(size_hash_dictionary):
-    # this function prints the output(result) of the program. if a format key: \n values
-    i = 1
-    print()
-    for key in size_hash_dictionary:
-        print(key, "bytes")
-        for file_hash in size_hash_dictionary[key]:
-            if len(size_hash_dictionary[key][file_hash]) > 1:
-                print("Hash:", file_hash)
-                for path in size_hash_dictionary[key][file_hash]:
-                    print(f"{i} {path}")
-                    i += 1
-    print()
-
-
 def check_for_duplicates():
     check = input("Check for duplicates? (yes, no)")
     if check.lower() == "yes":
@@ -108,6 +93,46 @@ def check_for_duplicates():
         exit()
 
 
+def print_duplicates(size_hash_dictionary):
+    # this function prints the output(result) of the program. if a format key: \n values
+    i = 1
+    print()
+    for key in size_hash_dictionary:
+        print(key, "bytes")
+        for file_hash in size_hash_dictionary[key]:
+            if len(size_hash_dictionary[key][file_hash]) > 1:
+                print("Hash:", file_hash)
+
+                for path in size_hash_dictionary[key][file_hash]:
+                    print(f"{i} {path}")
+                    i += 1
+                    
+
+
+    print()
+    return delete_files(i)
+
+
+def delete_files(i):
+    decision = input("Delete files?")
+    if decision.lower() not in {"yes", "no"}:
+        print("Wrong option")
+        return delete_files(i)
+    else:
+        while True:
+            file_numbers = input("Enter file numbers to delete:\n").split()
+            try:
+                file_numbers = [int(number) for number in file_numbers]
+                file_numbers = sorted(file_numbers, reverse=True)
+            except ValueError:
+                print("Wrong format")
+            else:
+                if file_numbers[0] > i:
+                    print("Wrong format")
+                else:
+                    ...
+
+
 if __name__ == "__main__":
     # this is the main function which calls other functions in a defined order
     check_directory()
@@ -116,3 +141,4 @@ if __name__ == "__main__":
     paths_dict = creating_sorted_dict(full_data)
     print_results()
     check_for_duplicates()
+    # delete_files(i)
