@@ -15,7 +15,8 @@ test_pathes = ['./module/root_folder/phones.csv',
                 './module/root_folder/files/stage/cars.json',
                 './module/root_folder/files/stage/package-lock.json',
                 './module/root_folder/files/stage/src/src.txt',
-                './module/root_folder/files/stage/src/spoiler.js']
+                './module/root_folder/files/stage/src/spoiler.js',
+                './module/root_folder/files/stage/src/this_path_is_without_format']
 
 #print(test_pathes)
 
@@ -66,19 +67,20 @@ def third_method():
 
 
 # work with dict
-
-
 def fourth_method():
     format = input("enter format like php, csv, html, csv, txt, js, json\n")
+    #print(type(format))
+    #print(format == "")
     new_list = test_pathes
-    new_list = [x for x in new_list if os.path.splitext(x)[1][1:] == format]
-    sizes = [os.path.getsize(x) for x in new_list]
-    print("sizes:\n", sizes)
-
+    if format != "":
+        new_list = [x for x in new_list if format in os.path.splitext(x)[1][1:]]
+    else:
+        new_list = [x for x in new_list if os.path.splitext(x)[1][1:] != ""]
     print("")
     #print(new_list)
     for x in new_list:
         print(x)
+
 
 
 #first_method()  # working
