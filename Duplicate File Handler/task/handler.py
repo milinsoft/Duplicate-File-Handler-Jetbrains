@@ -3,93 +3,86 @@ from sys import argv as args
 from hashlib import md5
 from os.path import getsize, join
 
-from collections import namedtuple
+
+class File:
+
+    def __init__(self, path, size):
+        self.size = size
+        self.path = path
+        self.hash = None
+
+    def get_hash(self) -> hash:
+        """returns file's md5-hash value in hex-digit format"""
+        with open(self.path, "rb") as file:
+            self.hash = md5(file.read()).hexdigest()
 
 
 class DuplicateFileHandler:
 
-    def obtaining_abs_paths_lst(self, extension=None) -> list:
-        """ this function scans provided directory and creates the list of absolut paths to all files in directory
-        if arg extension is empty - all paths kept, else - lst will keep only paths to files with a specified extension
-        returns filtered list of absolut paths to all files with the requested extension in directory"""
+    def __init__(self):
+        self.files_list: list = []
+        self.sort_option: bool or None = None
+        self.result_dict: dict = {}
 
-        def correct_extension(filename) -> bool:
-            return not extension or filename.endswith(extension)
-
+    def get_files_list(self, extension=None):
+        """recursively scans directory provided and creates the list of absolute paths filtering by extension"""
         abs_paths_lst = [
             join(root, name)
             for root, dirs, files in os.walk(r"./module/", topdown=True)
             for name in files
-            if correct_extension(name)
+            if not extension or name.endswith(extension)
         ]
-        return abs_paths_lst
 
+        self.files_list = [File(size=getsize(path), path=path) for path in abs_paths_lst]
 
-    def creating_data_dict(self, abs_paths_lst: list) -> dict:
-        """this function takes a filtered list of absolut paths, produced by obtaining_abs_paths_lst() function
-        create a list of unique file sizes and creates and empty dict using the list of sizes as keys
-        appends lists of paths values to their keys in paths_dict
-        calls sort_dictionary function and returns sorted dict of file sizes as keys and lists of absolut paths as values"""
-
-
-        size_path_dict = dict.fromkeys([getsize(x) for x in abs_paths_lst], [])
-
-        for size in size_path_dict:
-            size_path_dict[size] = [path for path in abs_paths_lst if size == getsize(path)]
-        return size_path_dict
-
-
-    # TODO maybe make it inner function?
-    def sort_dictionary(self, sizes_and_paths_dict: dict) -> dict:
-        """this function takes list of file sizes and sort it in Descending or Ascending order
-        returns sorted list with file sizes as stings"""
-
+    def get_sorting_preference(self):
         reverse_status = {1: True, 2: False}
         sort_option = int(input("Size sorting options:\n1. Descending\n2. Ascending\n"))
         if sort_option not in reverse_status:
             print("\nWrong option")
-            return self.sort_dictionary(sizes_and_paths_dict)
+            return self.get_sorting_preference()
+        self.sort_option = reverse_status[sort_option]
 
-            #TODO USE namedtuple instead?
+    def print_search_results(self):
+        # filling out self.result_dict: dict
+        for file in self.files_list:
+            if file.size not in self.result_dict:
+                self.result_dict[file.size] = [file.path]
+            else:
+                self.result_dict[file.size].append(file.path)
 
-        else:
-            # Can be handy in case of getting rid of extra dict (by size)
-            # sorted_dict = dict(sorted(sizes_and_paths_dict.items(), key=lambda x: x[1], reverse=reverse_status[sort_option]))
-            return dict(sorted(sizes_and_paths_dict.items(), reverse=reverse_status[sort_option]))
+        self.result_dict = dict(sorted(self.result_dict.items(), reverse=self.sort_option))
+        for size, path_list in self.result_dict.items():
+            if path_list:
+                print(f"{size} bytes\n{os.linesep.join(path_list)}")  # os.linesep is workaround to use '\n' in f string
 
-
-    def print_search_results(self, sizes_and_paths_dict):
-        """this function prints the output(result) of the program. if a format key: \n values"""
-        for key, value in sizes_and_paths_dict.items():
-            print(key, "bytes\n")
-            print(*value, sep="\n")
-
-
-    def check_for_duplicates(self, sizes_and_paths_dict) -> dict:
-
-        def get_hash(file) -> hash:
-            """reads 'file' in a binary mode, calculates it's md5-hash value and returns value converted into hex-digit format"""
-            with open(file, 'rb') as file:
-                return md5(file.read()).hexdigest()
-
+    def check_for_duplicates(self):
         check = input("\nCheck for duplicates? (yes, no)\n").lower()
-        sizes_hashes_and_path_dict = {}
-
-        # checking only sizes with more than 2 keys
-        sizes_and_paths_dict = dict(filter(lambda x: len(x[1]) > 1, sizes_and_paths_dict.items()))
-
         if check == "yes":
-            for key, value in sizes_and_paths_dict.items():
-                hash_and_path_dict = {get_hash(x): [path for path in value if get_hash(path) == get_hash(x)]
-                                      for x in value}
-                sizes_hashes_and_path_dict[key] = hash_and_path_dict
+            files_size_list = sorted((file.size for file in self.files_list), reverse=self.sort_option)
+            sizes_with_several_files = [x for x in files_size_list if files_size_list.count(x) > 1]
+            self.files_list = [file for file in self.files_list if file.size in sizes_with_several_files]
+            
+            # calculate hashes
+            for file in self.files_list:
+                file.get_hash()
 
-        return sizes_hashes_and_path_dict
-
-
-    def print_duplicates(self, size_hash_dictionary):
+    def print_duplicate_files(self):
         """this function prints the output(result) of the program. if a format key: \n values"""
         del_dict = {}
+        self.result_dict = {}
+        for f in self.files_list:
+            if f.size not in self.result_dict:
+                self.result_dict[f.size] = {f.hash: [f.path]}
+            else:
+                if f.hash not in self.result_dict[f.size]:
+                    self.result_dict[f.size].update({f.hash: [f.path]})
+                else:
+                    if f.path not in self.result_dict[f.size][f.hash]:
+                        self.result_dict[f.size][f.hash].append(f.path)
+
+        size_hash_dictionary = dict(sorted(self.result_dict.items(), reverse=self.sort_option))
+
         i = 1
         print()
         for file_size, file_hashes in size_hash_dictionary.items():
@@ -106,17 +99,13 @@ class DuplicateFileHandler:
         print()
         return self.delete_files(del_dict)
 
-
     def delete_files(self, dl_dict) -> int:
-        decision = input("Delete files?")
+        decision = input("Delete files? (yes/no)")
         if decision.lower() not in {"yes", "no"}:
             print("Wrong option")
             return self.delete_files(dl_dict)
 
-        elif decision.lower() == "no":
-            exit()
-
-        else:
+        elif decision.lower() == "yes":
             while True:
                 file_numbers = input("Enter file numbers to delete separated by space:\n").split(" ")
                 try:
@@ -133,20 +122,16 @@ class DuplicateFileHandler:
                     print(f"Total freed up space: {freed_space} bytes")
                     break
 
-
     def start(self):
-        full_data = self.obtaining_abs_paths_lst(input("Enter the file format:\n"))
-
-
-        paths_dict = self.creating_data_dict(full_data)
-        paths_dict = self.sort_dictionary(paths_dict)
-        self.print_search_results(paths_dict)
-        self.duplicates_dict = self.check_for_duplicates(paths_dict)
-        self.print_duplicates(self.duplicates_dict)
+        """this is the main function which calls other functions in a defined order"""
+        self.get_files_list(input("Enter the file format or press 'return' for all:\n"))
+        self.get_sorting_preference()
+        self.print_search_results()
+        self.check_for_duplicates()
+        self.print_duplicate_files()
 
 
 if __name__ == "__main__":
-    """this is the main function which calls other functions in a defined order"""
     if len(args) < 2:  # 2 here because counting starts from 0, and args[0] is the name of a python3 script
         exit(print("Directory is not specified"))
 
